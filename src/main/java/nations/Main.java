@@ -16,31 +16,94 @@ public class Main {
 	public static void main(String[] args) {
 		
 		Scanner scan = new Scanner(System.in);
-		System.out.print("Search: ");
-		String searchScanner = scan.nextLine();
-		String search = "%" + searchScanner + "%";
+		boolean cycle = true;
+		
 		try(Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)){
-			String query1 = "select c.name, c.country_id, r.name, c2.name from countries c join regions r on r.region_id = c.region_id join continents c2 on c2.continent_id = r.continent_id where c.name like ? order by c.name;";
-			try(PreparedStatement psNations = con.prepareStatement(query1)){
-				psNations.setString(1, search);
-				try(ResultSet rsNations = psNations.executeQuery()){
-					if(!rsNations.next()) {
-						System.out.println("Nessun risultato");
-					} else {
-						String space = "     ";
-						System.out.print(format("ID"));
-						System.out.print(format("COUNTRY"));
-						System.out.print(format("REGION"));
-						System.out.println(format("CONTINENT"));
-						do {
-							System.out.print(format(rsNations.getInt(2)));
-							System.out.print(format(rsNations.getString(1)));
-							System.out.print(format(rsNations.getString(3)));
-							System.out.println(format(rsNations.getString(4)));
-						}while(rsNations.next());
+			do {
+				System.out.print("Search: ");
+				String searchScanner = scan.nextLine();
+				String search = "%" + searchScanner + "%";
+				String query1 = "select c.name, c.country_id, r.name, c2.name from countries c join regions r on r.region_id = c.region_id join continents c2 on c2.continent_id = r.continent_id where c.name like ? order by c.name;";
+				try (PreparedStatement psNations = con.prepareStatement(query1)) {
+					psNations.setString(1, search);
+					try (ResultSet rsNations = psNations.executeQuery()) {
+						if (!rsNations.next()) {
+							System.out.println("Nessun risultato");
+							System.out.print("Do another search? y/n");
+							String input = scan.nextLine();
+							if(input.equalsIgnoreCase("n")) {
+								cycle = false;
+								System.out.println("Thanks for using our program");
+							}
+						} else {
+							System.out.print(format("ID"));
+							System.out.print(format("COUNTRY"));
+							System.out.print(format("REGION"));
+							System.out.println(format("CONTINENT"));
+							do {
+								System.out.print(format(rsNations.getInt(2)));
+								System.out.print(format(rsNations.getString(1)));
+								System.out.print(format(rsNations.getString(3)));
+								System.out.println(format(rsNations.getString(4)));
+							} while (rsNations.next());
+
+							System.out.println("Choose a country id: ");
+							String id = scan.nextLine();
+							String query2 = "select l.`language`, c.name from languages l join country_languages cl on l.language_id = cl.language_id join countries c on c.country_id = cl.country_id where c.country_id = ? order by `language`;";
+							try (PreparedStatement psLang = con.prepareStatement(query2)) {
+								psLang.setString(1, id);
+								try (ResultSet rsLang = psLang.executeQuery()) {
+									if (!rsLang.next()) {
+										System.out.println("Nessun risultato");
+										System.out.print("Do another search? y/n");
+										String input = scan.nextLine();
+										if(input.equalsIgnoreCase("n")) {
+											cycle = false;
+											System.out.println("Thanks for using our program");
+										}
+									} else {
+										System.out.println("Details for country: " + rsLang.getString(2));
+										System.out.print("Languages: ");
+										do {
+											System.out.print(rsLang.getString(1));
+											if (!rsLang.isLast()) {
+												System.out.print(", ");
+											}
+										} while (rsLang.next());
+										String query3 = "select cs.* from country_stats cs join countries c on c.country_id = cs.country_id join (select max(`year`) `year` , country_id from country_stats group by country_id) my on cs.country_id = my.country_id and my.`year` = cs.`year` where c.country_id = ?;";
+										try (PreparedStatement psStats = con.prepareStatement(query3)) {
+											psStats.setString(1, id);
+											try (ResultSet rsStats = psStats.executeQuery()) {
+												System.out.println("\nMost recent stats");
+												if (!rsStats.next()) {
+													System.out.println("Stats not found");
+													System.out.print("Do another search? y/n");
+													String input = scan.nextLine();
+													if(input.equalsIgnoreCase("n")) {
+														cycle = false;
+														System.out.println("Thanks for using our program");
+													}
+												} else {
+													System.out.println("Year: " + rsStats.getInt("year"));
+													System.out
+															.println("Population: " + rsStats.getString("population"));
+													System.out.println("GDP: " + rsStats.getString("gdp"));
+												}
+												System.out.print("Do another search? y/n");
+												String input = scan.nextLine();
+												if(input.equalsIgnoreCase("n")) {
+													cycle = false;
+													System.out.println("Thanks for using our program");
+												}
+											}
+										}
+									}
+								}
+							}
+						}
 					}
-				}
-			}
+				} 
+			} while (cycle);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
