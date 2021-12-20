@@ -17,6 +17,7 @@ public class Main {
 		
 		Scanner scan = new Scanner(System.in);
 		boolean cycle = true;
+		boolean repeat;
 		
 		try(Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)){
 			do {
@@ -29,12 +30,20 @@ public class Main {
 					try (ResultSet rsNations = psNations.executeQuery()) {
 						if (!rsNations.next()) {
 							System.out.println("Nessun risultato");
-							System.out.print("Do another search? y/n");
-							String input = scan.nextLine();
-							if(input.equalsIgnoreCase("n")) {
-								cycle = false;
-								System.out.println("Thanks for using our program");
-							}
+							do {
+								System.out.print("Do another search? y/n");
+								String input = scan.nextLine();
+								repeat = true;
+								if (input.equalsIgnoreCase("n")) {
+									cycle = false;
+									System.out.println("Thanks for using our program");
+									repeat = false;
+								} else if(!input.equalsIgnoreCase("y")) {
+									System.out.println("Please type y to do another search or n to terminate the program");
+								} else {
+									repeat = false;
+								}
+							} while (repeat == true);
 						} else {
 							System.out.print(format("ID"));
 							System.out.print(format("COUNTRY"));
@@ -55,12 +64,20 @@ public class Main {
 								try (ResultSet rsLang = psLang.executeQuery()) {
 									if (!rsLang.next()) {
 										System.out.println("Nessun risultato");
-										System.out.print("Do another search? y/n");
-										String input = scan.nextLine();
-										if(input.equalsIgnoreCase("n")) {
-											cycle = false;
-											System.out.println("Thanks for using our program");
-										}
+										do {
+											System.out.print("Do another search? y/n");
+											String input = scan.nextLine();
+											repeat = true;
+											if (input.equalsIgnoreCase("n")) {
+												cycle = false;
+												System.out.println("Thanks for using our program");
+												repeat = false;
+											} else if(!input.equalsIgnoreCase("y")) {
+												System.out.println("Please type y to do another search or n to terminate the program");
+											} else {
+												repeat = false;
+											}
+										} while (repeat == true);
 									} else {
 										System.out.println("Details for country: " + rsLang.getString(2));
 										System.out.print("Languages: ");
@@ -76,24 +93,41 @@ public class Main {
 											try (ResultSet rsStats = psStats.executeQuery()) {
 												System.out.println("\nMost recent stats");
 												if (!rsStats.next()) {
-													System.out.println("Stats not found");
-													System.out.print("Do another search? y/n");
-													String input = scan.nextLine();
-													if(input.equalsIgnoreCase("n")) {
-														cycle = false;
-														System.out.println("Thanks for using our program");
-													}
+													System.out.println("Stats not found");									
+													do {
+														System.out.print("Do another search? y/n");
+														String input = scan.nextLine();
+														repeat = true;
+														if (input.equalsIgnoreCase("n")) {
+															cycle = false;
+															System.out.println("Thanks for using our program");
+															repeat = false;
+														} else if(!input.equalsIgnoreCase("y")) {
+															System.out.println("Please type y to do another search or n to terminate the program");
+														} else {
+															repeat = false;
+														}
+													} while (repeat == true);
 												} else {
 													System.out.println("Year: " + rsStats.getInt("year"));
 													System.out
 															.println("Population: " + rsStats.getString("population"));
 													System.out.println("GDP: " + rsStats.getString("gdp"));
-												}
-												System.out.print("Do another search? y/n");
-												String input = scan.nextLine();
-												if(input.equalsIgnoreCase("n")) {
-													cycle = false;
-													System.out.println("Thanks for using our program");
+												}								
+												do {
+													System.out.print("Do another search? y/n");
+													String input = scan.nextLine();
+													repeat = true;
+													if (input.equalsIgnoreCase("n")) {
+														cycle = false;
+														System.out.println("Thanks for using our program");
+														repeat = false;
+													} else if(!input.equalsIgnoreCase("y")) {
+														System.out.println("Please type y to do another search or n to terminate the program");
+													} else {
+														repeat = false;
+													}
+												} while (repeat == true);
 												}
 											}
 										}
@@ -101,8 +135,7 @@ public class Main {
 								}
 							}
 						}
-					}
-				} 
+					}	 
 			} while (cycle);
 		} catch (SQLException e) {
 			e.printStackTrace();
