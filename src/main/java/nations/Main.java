@@ -26,7 +26,6 @@ public class Main {
 				Italy.setNationalDay(LocalDate.of(1861, 3, 17));	
 			}
 			updateCountry(Italy, con);
-			System.out.println(Italy.getCountryId());
 			
 			
 		} catch (SQLException e) {
@@ -58,18 +57,39 @@ public class Main {
 	}
 	
 	public static void updateCountry(Country c, Connection con) throws SQLException {
-		String query = "update countries set name = ? set area = ? set national_day = ? set country_code2 = ? set country_code3 ? where country_id = ?;";
+		String query = "update countries set name = ? where country_id = ?";
 		try(PreparedStatement psUpdate = con.prepareStatement(query)){
 			psUpdate.setString(1, c.getName());
-			psUpdate.setBigDecimal(2, c.getArea());
-			psUpdate.setDate(3, Date.valueOf(c.getNationalDay()));
-			psUpdate.setString(4, c.getCountryCode2());
-			psUpdate.setString(5, c.getCountryCode3());
-			psUpdate.setInt(6, c.getCountryId());
+			psUpdate.setInt(2, c.getCountryId());
 			psUpdate.execute();
-			
+
 		}
+		query = "update countries set area = ? where country_id = ?";
+		try(PreparedStatement psUpdate = con.prepareStatement(query)){
+			psUpdate.setBigDecimal(1, c.getArea());
+			psUpdate.setInt(2, c.getCountryId());
+			psUpdate.execute();
+		}
+		query = "update countries set national_day = ? where country_id = ?";
+		try(PreparedStatement psUpdate = con.prepareStatement(query)){
+			psUpdate.setDate(1, Date.valueOf(c.getNationalDay()));
+			psUpdate.setInt(2, c.getCountryId());
+			psUpdate.execute();
+		}
+		query = "update countries set country_code2 = ? where country_id = ?";
+		try(PreparedStatement psUpdate = con.prepareStatement(query)){
+			psUpdate.setString(1, c.getCountryCode2());
+			psUpdate.setInt(2, c.getCountryId());
+			psUpdate.execute();
+		}
+		query = "update countries set country_code3 = ? where country_id = ?";
+		try(PreparedStatement psUpdate = con.prepareStatement(query)){
+			psUpdate.setString(1, c.getCountryCode3());
+			psUpdate.setInt(2, c.getCountryId());
+			psUpdate.execute();
+		}
+		
 	}
-	
+
 
 }
